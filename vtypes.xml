@@ -1,0 +1,3 @@
+<vehicle-types>
+    <vtype id="car" color="1,0,0" length="5.0" maxSpeed="13.89" minGap="2.5"/>
+</vehicle-types>

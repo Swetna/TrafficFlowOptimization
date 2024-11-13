@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SUMO-Google Maps Integration</title>
+    <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY"></script>
+    <style>
+        #map {
+            height: 100vh;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+
+    <script type="module">
+        // Import the functions you need from the SDKs
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
+
+        // Your Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCUJbJ8d9vbmC7GOjP_paLtNyv75SrPZJ0",
+            authDomain: "trafficanalysis-8aa99.firebaseapp.com",
+            projectId: "trafficanalysis-8aa99",
+            storageBucket: "trafficanalysis-8aa99.firebasestorage.app",
+            messagingSenderId: "71139143869",
+            appId: "1:71139143869:web:2686aced75157a7a62c7d4",
+            measurementId: "G-5BRR489TTZ"
+          };
+
+        // Initialize Firebase and get a reference to the database
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+
+        let map;
+        let vehicleMarkers = {};
+
+        function initMap() {
+            // Initialize the Google Map centered on a default location
+            map = new google.maps.Map(document.getElementById("map"), {
+                center: { lat: 34.0522, lng: -118.2437 }, // Example coordinates
+                zoom: 14,
+            });
+
+            // Start listening for vehicle updates
+            listenForVehicleUpdates();
+        }
+
+        function updateVehiclePosition(id, lat, lng) {
+            if (vehicleMarkers[id]) {
+                // Update the marker position if it already exists
+                vehicleMarkers[id].setPosition(new google.maps.LatLng(lat, lng));
+            } else {
+                // Create a new marker for the vehicle
+                vehicleMarkers[id] = new google.maps.Marker({
+                    position: new google.maps.LatLng(lat, lng),
+                    map: map,
+                    title: `Vehicle ${id}`,
+                });
+            }
+        }
+
+        function listenForVehicleUpdates() {
+            const vehicleRef = ref(database, 'vehicles');
+            
+            // Listen for changes in the vehicle data
+            onValue(vehicleRef, (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    for (const [id, vehicle] of Object.entries(data)) {
+                        updateVehiclePosition(id, vehicle.lat, vehicle.lng);
+                    }
+                }
+            });
+        }
+
+        // Initialize the map
+        window.initMap = initMap;
+    </script>
+</body>
+</html>
